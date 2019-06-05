@@ -6,9 +6,11 @@ import sys
 import serial
 import time
 
-green = "\033[32m"
-yellow = "\033[33m"
-reset = "\033[39m"
+color_send = "\033[32m"
+color_recv = "\033[33m"
+color_reset = "\033[39m"
+
+start_time = time.time()
 
 if( len(sys.argv) < 3 ):
 	print( "Usage: " + sys.argv[0] + " <serial port> <G-Code file> [start line]" )
@@ -16,24 +18,34 @@ if( len(sys.argv) < 3 ):
 
 print( "Using file " + sys.argv[2] )
 file = open( sys.argv[2], 'r' )
+
 if( len(sys.argv) >= 4 ):
 	startline = int(sys.argv[3])
 else:
 	startline = 1
-print( "Starting at line " + str(startline) )
 
+ser = serial.Serial()
+ser.port = sys.argv[1]
+ser.baudrate = 115200
+ser.dtr = False
+ser.open()
 
-print( "Waking printer..." )
-port = serial.Serial( sys.argv[1], 115200 )
-start_time = time.time()
-# wait until printer ready
-while True:
-	out = port.readline().decode("utf-8").strip()	# blocking
-	print( yellow + "< " + out + reset )
-	if out.startswith("echo:SD "):			# printer ready
-		break
+if startline == 1:
+	print( "Waking printer..." )
+	ser.dtr = True
+	# wait until printer ready
+	while True:
+		out = ser.readline().decode("utf-8").strip()	# blocking
+		print( color_recv + "< " + out + color_reset )
+		if out.startswith("echo:SD "):			# printer init complete
+			break
+else:
+	# skip waking/resetting the printer when resuming a print
+	# won't work on unpatched Linux: https://unix.stackexchange.com/questions/446088/how-to-prevent-dtr-on-open-for-cdc-acm
+	# -> the printer will reset anyway and you'll have to manually "tune" temperature/settings before continuing
+	print( "Starting at line " + str(startline) )
 
-# start sending
+print( "Starting to send G-code..." )
 i = 0
 for line in file:
 	try:
@@ -46,28 +58,26 @@ for line in file:
 		if not line.strip():		# skip empty lines
 			continue
 
-		port.write( bytes(line + '\n', "utf-8") )
-		print( "\033[K" + green + "> [" + str(i) + "] " + line + reset + "\r", end='', flush=True )	# stay in line
+		ser.write( bytes(line + '\n', "utf-8") )
+		print( "\033[K" + color_send + "> [" + str(i) + "] " + line + color_reset + "\r", end='', flush=True )	# stay in line
 		needs_newline="\n"
 
 		while True:
-			out = port.readline().decode("utf-8").strip()	# blocking
-
-			if out.startswith("ok"):
+			out = ser.readline().decode("utf-8").strip()	# blocking
+			if out.startswith("ok"):	# printer ready for more commands
 				break
 			else:
-				print( needs_newline + yellow + "< " + out + reset )
+				print( needs_newline + color_recv + "< " + out + color_reset )
 				needs_newline=""
 
 	except KeyboardInterrupt:
-		print("Aborting...")
-		port.write( bytes("M104 S0\nM140 S0\nM107\nM84\n", "utf-8") )	# turn off heat, fan, motors
-##		port.write( bytes("G91\nG1 Z45\nG90\n", "utf-8") )		# move print head up
-		sys.exit()
+		print("Aborting... turning off heat, fan, motors")
+		ser.write( bytes("M104 S0\nM140 S0\nM107\nM84\n", "utf-8") )
+		break
 
 file.close()
-port.close()
+ser.close()
 
 hours, rest = divmod( time.time()-start_time, 3600 )
 minutes, seconds = divmod( rest, 60 )
-print( "--- done after {:0>2}h {:0>2}m ---".format( int(hours),int(minutes) ) )
+print( "--- done after {}h {:0>2}m ---".format( int(hours),int(minutes) ) )
