@@ -47,7 +47,6 @@ if startline == 1:
 else:
 	# skip waking/resetting the printer when resuming a print
 	# won't work on unpatched Linux: https://unix.stackexchange.com/questions/446088/how-to-prevent-dtr-on-open-for-cdc-acm
-	# -> the printer will reset anyway and you'll have to manually "tune" temperature/settings before continuing
 	print( "Starting at line " + str(startline) )
 
 print( "Starting to send G-code..." )
