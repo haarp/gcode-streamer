@@ -3,6 +3,7 @@
 # License: GNU General Public License v3 or newer
 
 import sys
+import os
 import serial
 import time
 
@@ -16,13 +17,17 @@ if( len(sys.argv) < 3 ):
 	print( "Usage: " + sys.argv[0] + " <serial port> <G-Code file> [start line]" )
 	sys.exit()
 
-print( "Using file " + sys.argv[2] )
+modified = os.path.getmtime( sys.argv[2] )
+modified = time.strftime( '%x %X', time.localtime(modified) )
 file = open( sys.argv[2], 'r' )
 
 if( len(sys.argv) >= 4 ):
 	startline = int(sys.argv[3])
 else:
 	startline = 1
+
+print( "\033]0;" + os.path.basename( sys.argv[2] ) + " - G-code Streamer " + "\007" )	# set initial terminal title
+print( "Using file " + sys.argv[2] + ", last modified " + modified )
 
 ser = serial.Serial()
 ser.port = sys.argv[1]
