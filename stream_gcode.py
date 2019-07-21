@@ -51,6 +51,7 @@ else:
 
 print( "Printer ready, sending G-code..." )
 i = 0
+progress = -1; remaining = -1
 for line in file:
 	try:
 		i = i+1
@@ -62,6 +63,14 @@ for line in file:
 		if not line.strip():		# skip empty lines
 			continue
 
+		if line.startswith( "M73 P" ):
+			progress = int( line.split('P')[1].split('R')[0] )
+			remaining = int( line.split('R')[1] )
+
+		if( i % 25 == 0 and progress > -1 and remaining > -1 ):	# set terminal title with percentage and time remaining
+			print( "\033]0;" + "(" + str(progress) + "% ⏲" + str(int(remaining/60)) + ":" + str(remaining%60) + "R) " +
+				os.path.basename( sys.argv[2] ) + " - G-code Streamer" + "\007", end='', flush=True )	# no newline
+
 		ser.write( bytes(line + '\n', "utf-8") )
 		print( "\033[K" + color_send + "> [" + str(i) + "] " + line + color_reset + "\r", end='', flush=True )	# stay in line
 		needs_newline="\n"
@@ -70,6 +79,12 @@ for line in file:
 			out = ser.readline().decode("utf-8").strip()	# blocking
 			if out.startswith("ok"):	# printer ready for more commands
 				break
+			elif out.startswith("echo:busy: processing"):
+				pass
+			elif out.startswith("NORMAL MODE: Percent done:"):
+				pass
+			elif out.startswith("SILENT MODE: Percent done:"):
+				pass
 			else:
 				print( needs_newline + color_recv + "< " + out + color_reset )
 				needs_newline=""
