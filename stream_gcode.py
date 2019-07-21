@@ -90,7 +90,7 @@ for line in file:
 				needs_newline=""
 
 	except KeyboardInterrupt:
-		print("Aborting... turning off heat, fan, motors")
+		print("\nAborting... turning off heat, fan, motors")
 		ser.write( bytes("M104 S0\nM140 S0\nM107\nM84\n", "utf-8") )
 		break
 
