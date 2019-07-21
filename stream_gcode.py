@@ -49,7 +49,7 @@ else:
 	# won't work on unpatched Linux: https://unix.stackexchange.com/questions/446088/how-to-prevent-dtr-on-open-for-cdc-acm
 	print( "Starting at line " + str(startline) )
 
-print( "Starting to send G-code..." )
+print( "Printer ready, sending G-code..." )
 i = 0
 for line in file:
 	try:
