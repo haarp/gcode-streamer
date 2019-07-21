@@ -4,7 +4,7 @@ Python 3 and pyserial
 
 Usage
 ===
-Run the without arguments to see usage info
+Run without arguments to see usage info
 
 Startline
 ===
@@ -15,4 +15,4 @@ See https://unix.stackexchange.com/questions/446088/how-to-prevent-dtr-on-open-f
 
 I don't know how other OS will react.
 
-To use this feature regardless, you will probably have to "tune" temperature/settings at the printer after launching the script.
+To use this feature regardless, you will probably have to "tune" temperature/settings at the printer after launching the script. Good Luck!
