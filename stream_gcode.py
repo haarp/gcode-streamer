@@ -85,7 +85,7 @@ for line in file:
 			remaining = int( line.split('R')[1] )
 
 		if( i % 25 == 0 and progress > -1 and remaining > -1 ):	# set terminal title with percentage and time remaining
-			print( "\033]0;" + "(" + str(progress) + "% ⏲" + str(int(remaining/60)) + ":" + str(remaining%60) + "R) " +
+			print( "\033]0;" + "(" + str(progress) + "% ⏲" + str(int(remaining/60)) + ":" + str(remaining%60).zfill(2) + "R) " +
 				os.path.basename( sys.argv[2] ) + " - G-code Streamer" + "\007", end='', flush=True )	# no newline
 
 		ser.write( bytes(line + '\n', "utf-8") )
