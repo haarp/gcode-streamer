@@ -11,6 +11,20 @@ color_send = "\033[32m"
 color_recv = "\033[33m"
 color_reset = "\033[39m"
 
+def finish( exitcode ):
+	try:
+		file.close()
+		ser.close()
+	except:
+		pass
+
+	hours, rest = divmod( time.time()-start_time, 3600 )
+	minutes, seconds = divmod( rest, 60 )
+	print( "\n--- done after {}h {:0>2}m ---".format( int(hours),int(minutes) ) )
+
+	sys.exit(exitcode)
+
+
 start_time = time.time()
 
 if( len(sys.argv) < 3 ):
@@ -85,6 +99,10 @@ for line in file:
 				pass
 			elif out.startswith("SILENT MODE: Percent done:"):
 				pass
+			elif ( out == "start" or out.startswith("echo: Last Updated") ):
+				print( needs_newline + color_recv + "< " + out + color_reset )
+				print( "Printer reset?! Bailing out!" )
+				finish(1)
 			else:
 				print( needs_newline + color_recv + "< " + out + color_reset )
 				needs_newline=""
@@ -92,11 +110,6 @@ for line in file:
 	except KeyboardInterrupt:
 		print("\nAborting... turning off heat, fan, motors")
 		ser.write( bytes("M104 S0\nM140 S0\nM107\nM84\n", "utf-8") )
-		break
+		finish(130)
 
-file.close()
-ser.close()
-
-hours, rest = divmod( time.time()-start_time, 3600 )
-minutes, seconds = divmod( rest, 60 )
-print( "--- done after {}h {:0>2}m ---".format( int(hours),int(minutes) ) )
+finish(0)
