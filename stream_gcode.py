@@ -48,6 +48,9 @@ ser.port = sys.argv[1]
 ser.baudrate = 115200
 ser.dtr = False
 ser.open()
+time.sleep(0.1)
+ser.flushInput()
+time.sleep(0.1)
 
 if startline == 1:
 	print( "Waking printer..." )
