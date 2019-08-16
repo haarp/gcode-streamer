@@ -98,9 +98,7 @@ for line in file:
 				break
 			elif out.startswith("echo:busy: processing"):
 				pass
-			elif out.startswith("NORMAL MODE: Percent done:"):
-				pass
-			elif out.startswith("SILENT MODE: Percent done:"):
+			elif ( out.startswith("NORMAL MODE: Percent") or out.startswith("SILENT MODE: Percent") ):
 				pass
 			elif ( out == "start" or out.startswith("echo: Last Updated") ):
 				print( needs_newline + color_recv + "< " + out + color_reset )
