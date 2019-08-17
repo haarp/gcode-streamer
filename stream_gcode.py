@@ -69,6 +69,7 @@ else:
 print( "Printer ready, sending G-code..." )
 i = 0
 progress = -1; remaining = -1
+out_newline=""; in_newline=""
 for line in file:
 	try:
 		i = i+1
@@ -89,8 +90,8 @@ for line in file:
 				os.path.basename( sys.argv[2] ) + " - G-code Streamer" + "\007", end='', flush=True )	# no newline
 
 		ser.write( bytes(line + '\n', "utf-8") )
-		print( "\033[K" + color_send + "> [" + str(i) + "] " + line + color_reset + "\r", end='', flush=True )	# stay in line
-		needs_newline="\n"
+		print( in_newline + "\033[K" + color_send + "> [" + str(i) + "] " + line + color_reset + "\r", end='', flush=True )	# stay in line
+		in_newline=''; out_newline="\n"
 
 		while True:
 			out = ser.readline().decode("utf-8").strip()	# blocking
@@ -100,13 +101,21 @@ for line in file:
 				pass
 			elif ( out.startswith("NORMAL MODE: Percent") or out.startswith("SILENT MODE: Percent") ):
 				pass
+			elif out.startswith("T:"):
+				print( out_newline + "\033[K" + color_recv + "< " + out + color_reset + "\r", end='', flush=True )	# stay in line
+				out_newline=''; in_newline="\n"
 			elif ( out == "start" or out.startswith("echo: Last Updated") ):
-				print( needs_newline + color_recv + "< " + out + color_reset )
+				if( out_newline or in_newline ):
+					print("\n", end='')
+				print( color_recv + "< " + out + color_reset )
 				print( "Printer reset?! Bailing out!" )
 				finish(1)
 			else:
-				print( needs_newline + color_recv + "< " + out + color_reset )
-				needs_newline=""
+				if( out_newline or in_newline ):
+					print("\n", end='')
+					out_newline=""
+					in_newline=""
+				print( color_recv + "< " + out + color_reset )
 
 	except KeyboardInterrupt:
 		print("\nAborting... turning off heat, fan, motors")
