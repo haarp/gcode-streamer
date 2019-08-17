@@ -7,9 +7,10 @@ import os
 import serial
 import time
 
-color_send = "\033[32m"
-color_recv = "\033[33m"
-color_reset = "\033[39m"
+col_send = "\033[32m"
+col_recv = "\033[33m"
+col_error = "\033[31m"
+col_reset = "\033[39m"
 
 def finish( exitcode ):
 	try:
@@ -58,7 +59,7 @@ if startline == 1:
 	# wait until printer ready
 	while True:
 		out = ser.readline().decode("utf-8").strip()	# blocking
-		print( color_recv + "< " + out + color_reset )
+		print( col_recv + "< " + out + col_reset )
 		if out.startswith("echo:SD "):			# printer init complete
 			break
 else:
@@ -90,7 +91,7 @@ for line in file:
 				os.path.basename( sys.argv[2] ) + " - G-code Streamer" + "\007", end='', flush=True )	# no newline
 
 		ser.write( bytes(line + '\n', "utf-8") )
-		print( in_newline + "\033[K" + color_send + "> [" + str(i) + "] " + line + color_reset + "\r", end='', flush=True )	# stay in line
+		print( in_newline + "\033[K" + col_send + "> [" + str(i) + "] " + line + col_reset + "\r", end='', flush=True )	# stay in line
 		in_newline=''; out_newline="\n"
 
 		while True:
@@ -102,23 +103,23 @@ for line in file:
 			elif ( out.startswith("NORMAL MODE: Percent") or out.startswith("SILENT MODE: Percent") ):
 				pass
 			elif out.startswith("T:"):
-				print( out_newline + "\033[K" + color_recv + "< " + out + color_reset + "\r", end='', flush=True )	# stay in line
+				print( out_newline + "\033[K" + col_recv + "< " + out + col_reset + "\r", end='', flush=True )	# stay in line
 				out_newline=''; in_newline="\n"
 			elif ( out == "start" or out.startswith("echo: Last Updated") ):
 				if( out_newline or in_newline ):
 					print("\n", end='')
-				print( color_recv + "< " + out + color_reset )
-				print( "Printer reset?! Bailing out!" )
+				print( col_recv + "< " + out + col_reset )
+				print( col_error + "Printer reset?! Bailing out!" + col_reset )
 				finish(1)
 			else:
 				if( out_newline or in_newline ):
 					print("\n", end='')
 					out_newline=""
 					in_newline=""
-				print( color_recv + "< " + out + color_reset )
+				print( col_recv + "< " + out + col_reset )
 
 	except KeyboardInterrupt:
-		print("\nAborting... turning off heat, fan, motors")
+		print( "\n" + col_error + "Aborting... turning off heat, fan, motors" + col_reset )
 		ser.write( bytes("M104 S0\nM140 S0\nM107\nM84\n", "utf-8") )
 		finish(130)
 
