@@ -1,3 +1,9 @@
+Information
+===
+Do you want to 3D-print directly from your USB port? Upset that Prusa [removed](https://github.com/prusa3d/PrusaSlicer/issues/2046) this feature from their slicer? Use this!
+
+This tool streams G-Code directly over a serial/USB port to a printer.
+
 Requirements
 ===
 Python 3 and pyserial
