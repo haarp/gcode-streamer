@@ -7,6 +7,8 @@ import os
 import serial
 import time
 
+os.system("") #To print colored output correctly on windows 10
+
 col_send = "\033[32m"
 col_recv = "\033[33m"
 col_error = "\033[31m"
